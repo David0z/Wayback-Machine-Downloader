@@ -1,4 +1,4 @@
-package analysis
+package view_analysis
 
 import "github.com/rivo/tview"
 

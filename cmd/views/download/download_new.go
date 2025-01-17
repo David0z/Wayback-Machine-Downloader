@@ -5,7 +5,7 @@ import (
 	"path"
 	"waybackdownloader/cmd/data"
 	"waybackdownloader/cmd/util"
-	"waybackdownloader/cmd/views/analysis"
+	view_analysis "waybackdownloader/cmd/views/analysis"
 	"waybackdownloader/cmd/web/api"
 
 	"github.com/gdamore/tcell/v2"
@@ -28,10 +28,10 @@ func DownloadNew(app *tview.Application) {
 				drawDownloadInfo(app, websiteURL)
 
 				go func() {
-					api.WaybackCollectionSave(websiteURL, folderPath)
+					api.WaybackLinksCollectionSave(websiteURL, folderPath)
 
 					app.QueueUpdateDraw(func() {
-						drawDownloadFinishModal(app, websiteURL, analysis.AnalysisView(websiteURL))
+						drawDownloadFinishModal(app, websiteURL, view_analysis.AnalysisView(websiteURL))
 					})
 				}()
 			}
