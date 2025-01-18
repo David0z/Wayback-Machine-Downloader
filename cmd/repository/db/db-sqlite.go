@@ -14,11 +14,6 @@ var (
 	errorUpdate = errors.New("failed to update")
 )
 
-const (
-	SELECT_ONE SelectString = "1"
-	SELECT_ALL SelectString = ""
-)
-
 type SQLiteRepository struct {
 	Conn *sql.DB
 }
@@ -81,7 +76,7 @@ func (repo *SQLiteRepository) InsertURLs(urls []data.Link) (*[]data.Link, error)
 }
 
 func (repo *SQLiteRepository) CollectionURL(websiteURL string) ([]data.Link, error) {
-	query := fmt.Sprintf(`SELECT urlkey, timestamp, original, mimetype, statuscode, websiteurl, downloaded FROM links WHERE websiteurl = '%s'`, websiteURL)
+	query := fmt.Sprintf(`SELECT urlkey, timestamp, original, mimetype, statuscode, websiteurl, downloaded FROM links WHERE websiteurl = '%s' AND statuscode = '200'`, websiteURL)
 
 	rows, err := repo.Conn.Query(query)
 	if err != nil {
@@ -112,8 +107,48 @@ func (repo *SQLiteRepository) CollectionURL(websiteURL string) ([]data.Link, err
 	return links, nil
 }
 
-func (repo *SQLiteRepository) SelectOne(websiteURL string) (bool, error) {
-	query := `SELECT 1 FROM links WHERE websiteurl = ?`
+type MimetypeQuantity struct {
+	Mimetype   string `json:"mimetype"`
+	RowCount   int    `json:"row_count"`
+	Downloaded int    `json:"downloaded_count"`
+}
+
+func (repo *SQLiteRepository) MimetypeQuantity(websiteURL string) ([]MimetypeQuantity, error) {
+	query := fmt.Sprintf(`SELECT 
+		mimetype, 
+    COUNT(*) AS row_count,
+    SUM(CASE WHEN downloaded = true THEN 1 ELSE 0 END) AS downloaded_count 
+		FROM links 
+		WHERE websiteurl = '%s' AND statuscode = '200' 
+		GROUP BY mimetype;`, websiteURL)
+
+	rows, err := repo.Conn.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var mimetypes []MimetypeQuantity
+
+	for rows.Next() {
+		var h MimetypeQuantity
+		err := rows.Scan(
+			&h.Mimetype,
+			&h.RowCount,
+			&h.Downloaded,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		mimetypes = append(mimetypes, h)
+	}
+
+	return mimetypes, nil
+}
+
+func (repo *SQLiteRepository) HasAny(websiteURL string) (bool, error) {
+	query := `SELECT 1 FROM links WHERE websiteurl = ? AND statuscode = '200'`
 
 	var exists int
 	err := repo.Conn.QueryRow(query, websiteURL).Scan(&exists)
@@ -125,6 +160,46 @@ func (repo *SQLiteRepository) SelectOne(websiteURL string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (repo *SQLiteRepository) GetOne(websiteURL string, mimetypes []string, offset int) (*data.Link, error) {
+	placeholders := strings.Repeat("?,", len(mimetypes))
+	placeholders = placeholders[:len(placeholders)-1]
+
+	query := fmt.Sprintf(`SELECT urlkey, timestamp, original, mimetype, statuscode, websiteurl, downloaded FROM links WHERE websiteurl = ? AND statuscode = '200' AND mimetype IN (%s) LIMIT 1 OFFSET ?`, placeholders)
+
+	args := append([]interface{}{}, websiteURL)
+	args = append(args, convertToInterfaceSlice(mimetypes)...)
+	args = append(args, offset)
+
+	var link data.Link
+	row := repo.Conn.QueryRow(query, args...)
+	err := row.Scan(
+		&link.Urlkey,
+		&link.Timestamp,
+		&link.Original,
+		&link.Mimetype,
+		&link.Statuscode,
+		&link.WebsiteURL,
+		&link.Downloaded,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &link, nil
+}
+
+func convertToInterfaceSlice(slice []string) []interface{} {
+	result := make([]interface{}, len(slice))
+	for i, v := range slice {
+		result[i] = v
+	}
+	return result
 }
 
 func (repo *SQLiteRepository) UpdateURL(url data.Link) error {

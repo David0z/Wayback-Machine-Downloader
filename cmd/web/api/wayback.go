@@ -26,12 +26,12 @@ func WaybackLinksCollectionSave(config *config.Config, websiteURL string, folder
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic(fmt.Sprintf("Error reading response body: %v\n", err))
+		panic(err)
 	}
 
 	var requestData [][]string
 	if err := json.Unmarshal(body, &requestData); err != nil {
-		panic(fmt.Sprintf("Error parsing JSON: %v\n", err))
+		panic(err)
 	}
 
 	var linksArr = make([]data.Link, len(requestData))
@@ -54,12 +54,12 @@ func WaybackLinksCollectionSave(config *config.Config, websiteURL string, folder
 	}
 }
 
-func WaybackDownloadFile(folderURL, mimeType, originalURL, timestamp string) (succeess bool) {
-	fileName := filepath.Base(originalURL)
+func WaybackDownloadFile(config *config.Config, link data.Link) (succeess bool) {
+	fileName := filepath.Base(link.Original)
 
-	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/%s/%s`, timestamp, originalURL))
+	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/%sif_/%s`, link.Timestamp, link.Original))
 	if err != nil {
-		panic(fmt.Sprintf("Error fetching the file: %v\n", err))
+		panic(err)
 	}
 	defer resp.Body.Close()
 
@@ -67,23 +67,29 @@ func WaybackDownloadFile(folderURL, mimeType, originalURL, timestamp string) (su
 		return false
 	}
 
-	parts := strings.Split(mimeType, "/")
-	if len(parts) > 0 {
-		mimeType = parts[0]
+	filePath := path.Join(data.MAIN_PATH, link.WebsiteURL, strings.ReplaceAll(link.Mimetype, "/", ""), fileName)
+
+	dirPath := path.Dir(filePath)
+
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		panic(err)
 	}
 
-	file, err := os.Create(path.Join(data.MAIN_PATH, folderURL, mimeType, fileName))
+	file, err := os.Create(filePath)
 	if err != nil {
-		panic(fmt.Sprintf("Error creating file: %v\n", err))
+		panic(err)
 	}
 	defer file.Close()
 
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {
-		panic(fmt.Sprintf("Error saving file: %v\n", err))
+		panic(err)
 	}
 
-	// @TODO edit in database as downloaded
+	err = config.DB.UpdateURL(link)
+	if err != nil {
+		panic(err)
+	}
 
 	return true
 }
