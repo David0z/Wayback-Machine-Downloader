@@ -22,13 +22,13 @@ func DownloadWebsiteURLs_View(config *config.Config) {
 		SetDoneFunc(func(key tcell.Key) {
 			if key == tcell.KeyEnter {
 				websiteURL := inputField.GetText()
-				folderPath := path.Join(data.MAIN_PATH, websiteURL)
+				folderPath := path.Join(data.MAIN_PATH, util.RemoveSlashFromString(websiteURL))
 				util.CreatePathIfNotExists(folderPath)
 
 				drawDownloadInfo(config, websiteURL)
 
 				go func() {
-					api.WaybackLinksCollectionSave(config, websiteURL, folderPath)
+					api.WaybackLinksCollectionSave(config, websiteURL)
 
 					config.App.QueueUpdateDraw(func() {
 						drawDownloadFinishModal(config, websiteURL)

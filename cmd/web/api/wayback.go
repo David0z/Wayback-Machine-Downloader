@@ -8,12 +8,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"waybackdownloader/cmd/data"
 	"waybackdownloader/cmd/data/config"
+	"waybackdownloader/cmd/util"
 )
 
-func WaybackLinksCollectionSave(config *config.Config, websiteURL string, folderPath string) {
+func WaybackLinksCollectionSave(config *config.Config, websiteURL string) {
 	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/timemap/json?url=%s&matchType=prefix&output=json&collapse=urlkey`, websiteURL))
 	if err != nil {
 		panic(err)
@@ -44,7 +44,7 @@ func WaybackLinksCollectionSave(config *config.Config, websiteURL string, folder
 			Mimetype:   valArray[3],
 			Statuscode: valArray[4],
 			Downloaded: false,
-			WebsiteURL: websiteURL,
+			WebsiteURL: util.RemoveSlashFromString(websiteURL),
 		}
 	}
 
@@ -67,7 +67,7 @@ func WaybackDownloadFile(config *config.Config, link data.Link) (succeess bool) 
 		return false
 	}
 
-	filePath := path.Join(data.MAIN_PATH, link.WebsiteURL, strings.ReplaceAll(link.Mimetype, "/", ""), fileName)
+	filePath := path.Join(data.MAIN_PATH, link.WebsiteURL, util.RemoveSlashFromString(link.Mimetype), fileName)
 
 	dirPath := path.Dir(filePath)
 
