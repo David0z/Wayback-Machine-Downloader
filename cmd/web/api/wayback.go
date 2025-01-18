@@ -10,9 +10,10 @@ import (
 	"path/filepath"
 	"strings"
 	"waybackdownloader/cmd/data"
+	"waybackdownloader/cmd/data/config"
 )
 
-func WaybackLinksCollectionSave(websiteURL string, folderPath string) {
+func WaybackLinksCollectionSave(config *config.Config, websiteURL string, folderPath string) {
 	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/timemap/json?url=%s&matchType=prefix&output=json&collapse=urlkey`, websiteURL))
 	if err != nil {
 		panic(err)
@@ -33,16 +34,23 @@ func WaybackLinksCollectionSave(websiteURL string, folderPath string) {
 		panic(fmt.Sprintf("Error parsing JSON: %v\n", err))
 	}
 
-	file, err := os.Create(path.Join(folderPath, data.LINKS_FILE_NAME))
-	if err != nil {
-		panic(fmt.Sprintf("Error creating file: %v\n", err))
-	}
-	defer file.Close()
+	var linksArr = make([]data.Link, len(requestData))
 
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(requestData); err != nil {
-		panic(fmt.Sprintf("Error writing to file: %v\n", err))
+	for index, valArray := range requestData {
+		linksArr[index] = data.Link{
+			Urlkey:     valArray[0],
+			Timestamp:  valArray[1],
+			Original:   valArray[2],
+			Mimetype:   valArray[3],
+			Statuscode: valArray[4],
+			Downloaded: false,
+			WebsiteURL: websiteURL,
+		}
+	}
+
+	_, err = config.DB.InsertURLs(linksArr)
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -74,6 +82,8 @@ func WaybackDownloadFile(folderURL, mimeType, originalURL, timestamp string) (su
 	if err != nil {
 		panic(fmt.Sprintf("Error saving file: %v\n", err))
 	}
+
+	// @TODO edit in database as downloaded
 
 	return true
 }

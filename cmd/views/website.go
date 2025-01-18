@@ -1,18 +1,18 @@
-package view_download
+package views
 
 import (
 	"fmt"
 	"path"
 	"waybackdownloader/cmd/data"
+	"waybackdownloader/cmd/data/config"
 	"waybackdownloader/cmd/util"
-	view_analysis "waybackdownloader/cmd/views/analysis"
 	"waybackdownloader/cmd/web/api"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-func DownloadNew(app *tview.Application) {
+func DownloadWebsiteURLs_View(config *config.Config) {
 	var inputField *tview.InputField
 
 	inputField = tview.NewInputField().
@@ -25,38 +25,40 @@ func DownloadNew(app *tview.Application) {
 				folderPath := path.Join(data.MAIN_PATH, websiteURL)
 				util.CreatePathIfNotExists(folderPath)
 
-				drawDownloadInfo(app, websiteURL)
+				drawDownloadInfo(config, websiteURL)
 
 				go func() {
-					api.WaybackLinksCollectionSave(websiteURL, folderPath)
+					api.WaybackLinksCollectionSave(config, websiteURL, folderPath)
 
-					app.QueueUpdateDraw(func() {
-						drawDownloadFinishModal(app, websiteURL, view_analysis.AnalysisView(websiteURL))
+					config.App.QueueUpdateDraw(func() {
+						drawDownloadFinishModal(config, websiteURL)
 					})
 				}()
 			}
 		})
 
-	app.SetRoot(inputField, true)
+	config.App.SetRoot(inputField, true)
 }
 
-func drawDownloadInfo(app *tview.Application, websiteURL string) {
+func drawDownloadInfo(config *config.Config, websiteURL string) {
 	textView := tview.NewTextView().
 		SetWrap(true).
 		SetWordWrap(true).
 		SetTextAlign(tview.AlignCenter).
 		SetText(fmt.Sprintf(`Downloading website URLs of "%s", this may take a while...`, websiteURL))
 
-	app.SetRoot(textView, true)
+	config.App.SetRoot(textView, true)
 }
 
-func drawDownloadFinishModal(app *tview.Application, websiteURL string, nextView tview.Primitive) {
+func drawDownloadFinishModal(config *config.Config, websiteURL string) {
 	modal := tview.NewModal().
 		SetText(fmt.Sprintf(`Finished downloading URLs of "%s"`, websiteURL)).
 		AddButtons([]string{"OK"}).
 		SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			app.SetRoot(nextView, true)
+			go func() {
+				Analysis_View(config, websiteURL)
+			}()
 		})
 
-	app.SetRoot(modal, true)
+	config.App.SetRoot(modal, true)
 }
