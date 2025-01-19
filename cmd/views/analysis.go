@@ -134,9 +134,8 @@ func generateDownloadText(mimetypeFiltered map[string]db.MimetypeQuantity, mimet
 }
 
 func downloadLoop(config *config.Config, textView *tview.TextView, mimetypeFiltered map[string]db.MimetypeQuantity, mimetypeArr []string, websiteURL string) {
-	offset := 0
 	for {
-		link, err := config.DB.GetOne(websiteURL, mimetypeArr, offset)
+		link, err := config.DB.GetOne(websiteURL, mimetypeArr)
 		if err != nil {
 			panic(err)
 		}
@@ -154,8 +153,6 @@ func downloadLoop(config *config.Config, textView *tview.TextView, mimetypeFilte
 		currMime := mimetypeFiltered[link.Mimetype]
 		currMime.Downloaded++
 		mimetypeFiltered[link.Mimetype] = currMime
-
-		offset++
 	}
 
 	modal := tview.NewModal().

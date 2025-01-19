@@ -162,15 +162,14 @@ func (repo *SQLiteRepository) HasAny(websiteURL string) (bool, error) {
 	return true, nil
 }
 
-func (repo *SQLiteRepository) GetOne(websiteURL string, mimetypes []string, offset int) (*data.Link, error) {
+func (repo *SQLiteRepository) GetOne(websiteURL string, mimetypes []string) (*data.Link, error) {
 	placeholders := strings.Repeat("?,", len(mimetypes))
 	placeholders = placeholders[:len(placeholders)-1]
 
-	query := fmt.Sprintf(`SELECT urlkey, timestamp, original, mimetype, statuscode, websiteurl, downloaded FROM links WHERE websiteurl = ? AND statuscode = '200' AND downloaded = false AND mimetype IN (%s) ORDER BY urlkey LIMIT 1 OFFSET ?`, placeholders)
+	query := fmt.Sprintf(`SELECT urlkey, timestamp, original, mimetype, statuscode, websiteurl, downloaded FROM links WHERE websiteurl = ? AND statuscode = '200' AND downloaded = false AND mimetype IN (%s) ORDER BY urlkey LIMIT 1`, placeholders)
 
 	args := append([]interface{}{}, websiteURL)
 	args = append(args, convertToInterfaceSlice(mimetypes)...)
-	args = append(args, offset)
 
 	var link data.Link
 	row := repo.Conn.QueryRow(query, args...)
