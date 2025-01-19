@@ -1,7 +1,7 @@
 
 # Wayback Machine Downloader
 
-A simple tool allowing for collective download of files from Archive.org Wayback Machine
+A simple tool allowing for collective download of files from [Archive.org Wayback Machine](https://web.archive.org/)
 
 
 ## Installation
