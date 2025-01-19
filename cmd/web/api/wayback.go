@@ -8,9 +8,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"waybackdownloader/cmd/data"
 	"waybackdownloader/cmd/data/config"
 	"waybackdownloader/cmd/util"
+
+	"github.com/h2non/filetype"
 )
 
 func WaybackLinksCollectionSave(config *config.Config, websiteURL string) {
@@ -55,7 +58,8 @@ func WaybackLinksCollectionSave(config *config.Config, websiteURL string) {
 }
 
 func WaybackDownloadFile(config *config.Config, link data.Link) (succeess bool) {
-	fileName := filepath.Base(link.Original)
+	fileName := util.SanitizeFileName(filepath.Base(link.Original))
+	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(fileName), ".", ""))
 
 	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/%sif_/%s`, link.Timestamp, link.Original))
 	if err != nil {
@@ -84,6 +88,30 @@ func WaybackDownloadFile(config *config.Config, link data.Link) (succeess bool) 
 	_, err = io.Copy(file, resp.Body)
 	if err != nil {
 		panic(err)
+	}
+
+	if !filetype.IsSupported(ext) {
+		file.Seek(0, 0)
+		head := make([]byte, 261)
+		_, err := file.Read(head)
+		if err != nil {
+			panic(err)
+		}
+
+		kind, err := filetype.Match(head)
+		if err != nil {
+			panic(err)
+		}
+		if kind != filetype.Unknown {
+			newFileName := fileName + "." + kind.Extension
+			newFilePath := path.Join(dirPath, newFileName)
+
+			file.Close()
+			err = os.Rename(filePath, newFilePath)
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	err = config.DB.UpdateURL(link)
