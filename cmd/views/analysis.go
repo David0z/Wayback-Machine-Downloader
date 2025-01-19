@@ -151,6 +151,11 @@ func downloadLoop(config *config.Config, textView *tview.TextView, mimetypeFilte
 		config.App.Draw()
 
 		api.WaybackDownloadFile(config, *link)
+		// @TODO save errors in db and skip
+		err = config.DB.UpdateURL(*link)
+		if err != nil {
+			panic(err)
+		}
 
 		currMime := mimetypeFiltered[link.Mimetype]
 		currMime.Downloaded++
