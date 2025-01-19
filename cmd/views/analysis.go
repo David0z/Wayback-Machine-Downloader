@@ -50,18 +50,20 @@ func Analysis_View(config *config.Config, websiteURL string) {
 		mimetypeBoolMap := map[string]bool{}
 
 		for _, mimetype := range mimetypeQuantity {
-			mimetypeBoolMap[mimetype.Mimetype] = false
-			formatted := fmt.Sprintf(
-				"%-*s: %-*d items | Downloaded: %-*d",
-				maxLength, mimetype.Mimetype,
-				maxRowCountLength, mimetype.RowCount,
-				maxDownloadLength, mimetype.Downloaded)
+			if mimetype.RowCount != mimetype.Downloaded {
+				mimetypeBoolMap[mimetype.Mimetype] = false
+				formatted := fmt.Sprintf(
+					"%-*s: %-*d items | Downloaded: %-*d",
+					maxLength, mimetype.Mimetype,
+					maxRowCountLength, mimetype.RowCount,
+					maxDownloadLength, mimetype.Downloaded)
 
-			mimetypeStr := mimetype.Mimetype
+				mimetypeStr := mimetype.Mimetype
 
-			form.AddCheckbox(formatted, false, func(checked bool) {
-				mimetypeBoolMap[mimetypeStr] = checked
-			})
+				form.AddCheckbox(formatted, false, func(checked bool) {
+					mimetypeBoolMap[mimetypeStr] = checked
+				})
+			}
 		}
 
 		form.AddButton("Download", func() {

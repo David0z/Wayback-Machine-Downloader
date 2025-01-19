@@ -94,7 +94,8 @@ func WaybackDownloadFile(config *config.Config, link data.Link) (succeess bool) 
 		file.Seek(0, 0)
 		head := make([]byte, 261)
 		_, err := file.Read(head)
-		if err != nil {
+		// @TODO - add error field in DB if download failed at any place instead of panic
+		if err != nil && err != io.EOF {
 			panic(err)
 		}
 
