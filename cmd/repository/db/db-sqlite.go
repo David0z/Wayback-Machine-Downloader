@@ -166,7 +166,7 @@ func (repo *SQLiteRepository) GetOne(websiteURL string, mimetypes []string) (*da
 	placeholders := strings.Repeat("?,", len(mimetypes))
 	placeholders = placeholders[:len(placeholders)-1]
 
-	query := fmt.Sprintf(`SELECT urlkey, timestamp, original, mimetype, statuscode, websiteurl, downloaded FROM links WHERE websiteurl = ? AND statuscode = '200' AND downloaded = false AND mimetype IN (%s) ORDER BY urlkey LIMIT 1`, placeholders)
+	query := fmt.Sprintf(`SELECT urlkey, timestamp, original, mimetype, statuscode, websiteurl, downloaded FROM links WHERE websiteurl = ? AND statuscode = '200' AND downloaded = false AND mimetype IN (%s) LIMIT 1`, placeholders)
 
 	args := append([]interface{}{}, websiteURL)
 	args = append(args, convertToInterfaceSlice(mimetypes)...)

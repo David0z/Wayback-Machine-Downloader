@@ -34,6 +34,8 @@ Just download this repo as ZIP (top right green button) and run the **wayback_do
 
 ![App Screenshot](https://raw.githubusercontent.com/David0z/WaybackMachineDownloader/refs/heads/main/screenshots/4.jpg)
 
+##### Downloaded files will be stored in the same location where your .exe file is located, in "wayback_download" folder.
+
 ##### Thanks to persistent storage system all you downloaded filenames will be saved. If you happen to interrupt the program, just run it again, pick the media types and continiue on.
 
 Happy downloading
