@@ -48,7 +48,7 @@ func WaybackLinksCollectionSave(config *config.Config, websiteURL string) {
 			Mimetype:   valArray[3],
 			Statuscode: valArray[4],
 			Downloaded: false,
-			WebsiteURL: util.RemoveSlashFromString(websiteURL),
+			WebsiteURL: util.SanitizeFileName(websiteURL),
 		}
 	}
 
