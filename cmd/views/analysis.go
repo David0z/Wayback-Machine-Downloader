@@ -219,7 +219,7 @@ func AnalysisList_View(config *config.Config) {
 		list := tview.NewList()
 
 		for index, folderName := range folderNameList {
-			list.AddItem(folderName, "", rune(index), nil)
+			list.AddItem(folderName, "", rune(index+'0'), nil)
 		}
 
 		list.SetBorder(true).SetTitle("Select website URL").SetTitleAlign(tview.AlignLeft)
