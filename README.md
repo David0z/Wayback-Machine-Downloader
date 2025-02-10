@@ -1,17 +1,17 @@
-
 # Wayback Machine Downloader
 
 A simple tool allowing for collective download of files from [Archive.org Wayback Machine](https://web.archive.org/)
 
-
 ## Installation
 
-Just download this repo as ZIP (top right green button) and run the **wayback_downloader.exe**
+Just go to latest release (on the right panel click **Releases**) and download the **wayback_downloader.exe** and run it.
 
 ## Usage
 
 ### Step 1: Download website URLS
+
 ##### a) Choose first option to download new website URLs
+
 ![App Screenshot](https://raw.githubusercontent.com/David0z/WaybackMachineDownloader/refs/heads/main/screenshots/1.jpg)
 
 ##### b) paste your website URL (it will be matched by prefix)
