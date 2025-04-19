@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 	"waybackdownloader/cmd/data"
 	"waybackdownloader/cmd/data/config"
 	"waybackdownloader/cmd/util"
@@ -61,13 +60,12 @@ func WaybackLinksCollectionSave(config *config.Config, websiteURL string) {
 
 func WaybackDownloadFile(config *config.Config, link data.Link) error {
 	fileName := util.SanitizeFileName(filepath.Base(link.Original))
+	if len(fileName) > 50 {
+		fileName = fileName[:50]
+	}
 	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(fileName), ".", ""))
 
-	client := &http.Client{
-		Timeout: 1 * time.Minute,
-	}
-
-	resp, err := client.Get(fmt.Sprintf(`https://web.archive.org/web/%sif_/%s`, link.Timestamp, link.Original))
+	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/%sif_/%s`, link.Timestamp, link.Original))
 	if err != nil {
 		return err
 	}
