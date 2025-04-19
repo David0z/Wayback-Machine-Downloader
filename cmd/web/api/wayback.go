@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 	"waybackdownloader/cmd/data"
 	"waybackdownloader/cmd/data/config"
 	"waybackdownloader/cmd/util"
@@ -62,7 +63,11 @@ func WaybackDownloadFile(config *config.Config, link data.Link) error {
 	fileName := util.SanitizeFileName(filepath.Base(link.Original))
 	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(fileName), ".", ""))
 
-	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/%sif_/%s`, link.Timestamp, link.Original))
+	client := &http.Client{
+		Timeout: 1 * time.Minute,
+	}
+
+	resp, err := client.Get(fmt.Sprintf(`https://web.archive.org/web/%sif_/%s`, link.Timestamp, link.Original))
 	if err != nil {
 		return err
 	}
@@ -75,6 +80,17 @@ func WaybackDownloadFile(config *config.Config, link data.Link) error {
 	filePath := path.Join(data.MAIN_PATH, link.WebsiteURL, util.RemoveSlashFromString(link.Mimetype), fileName)
 
 	dirPath := path.Dir(filePath)
+	extSuffix := filepath.Ext(fileName)
+	baseName := strings.TrimSuffix(fileName, extSuffix)
+	counter := 1
+	for {
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			break
+		}
+		fileName = fmt.Sprintf("%s_%d%s", baseName, counter, extSuffix)
+		filePath = path.Join(dirPath, fileName)
+		counter++
+	}
 
 	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
 		return err
