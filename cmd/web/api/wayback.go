@@ -65,7 +65,7 @@ func WaybackDownloadFile(config *config.Config, link data.Link) error {
 	}
 	ext := strings.ToLower(strings.ReplaceAll(filepath.Ext(fileName), ".", ""))
 
-	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/%sif_/%s`, link.Timestamp, link.Original))
+	resp, err := http.Get(fmt.Sprintf(`https://web.archive.org/web/%soe_/%s`, link.Timestamp, link.Original))
 	if err != nil {
 		return err
 	}
