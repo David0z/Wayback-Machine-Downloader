@@ -1,8 +1,8 @@
 package views
 
 import (
+	"waybackdownloader/cmd/data"
 	"waybackdownloader/cmd/data/config"
-	"waybackdownloader/cmd/repository/db"
 
 	"github.com/rivo/tview"
 )
@@ -10,8 +10,8 @@ import (
 func Options_View(config *config.Config) {
 	form := tview.NewForm()
 
-	form.AddCheckbox("Copy full file path", (*config.Options.Options)[db.OptionsMap[db.OPTION_COPY_FULL_PATH]], func(checked bool) {
-		config.SetOption(db.OptionsMap[db.OPTION_COPY_FULL_PATH], checked)
+	form.AddCheckbox("Copy full file path", (*config.Options.Options)[data.OptionsMap[data.OPTION_COPY_FULL_PATH]], func(checked bool) {
+		config.SetOption(data.OptionsMap[data.OPTION_COPY_FULL_PATH], checked)
 	})
 
 	form.AddButton("Back", func() {

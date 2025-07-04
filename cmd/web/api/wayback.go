@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -59,6 +60,8 @@ func WaybackLinksCollectionSave(config *config.Config, websiteURL string) {
 }
 
 func WaybackDownloadFile(config *config.Config, link data.Link) error {
+	keepFullFilePath := (*config.Options.Options)[data.OptionsMap[data.OPTION_COPY_FULL_PATH]]
+
 	fileName := util.SanitizeFileName(filepath.Base(link.Original))
 	if len(fileName) > 50 {
 		fileName = fileName[:50]
@@ -75,7 +78,20 @@ func WaybackDownloadFile(config *config.Config, link data.Link) error {
 		return errors.New("request failed")
 	}
 
-	filePath := path.Join(data.MAIN_PATH, link.WebsiteURL, util.RemoveSlashFromString(link.Mimetype), fileName)
+	defaultLocation := util.RemoveSlashFromString(link.Mimetype)
+	if keepFullFilePath {
+		u, err := url.Parse(link.Original)
+		if err != nil {
+			return err
+		}
+		urlPath := u.Path
+		dirPath := path.Dir(urlPath)
+		cleaned := strings.TrimPrefix(dirPath, "/")
+
+		defaultLocation = cleaned
+	}
+
+	filePath := path.Join(data.MAIN_PATH, link.WebsiteURL, defaultLocation, fileName)
 
 	dirPath := path.Dir(filePath)
 	extSuffix := filepath.Ext(fileName)

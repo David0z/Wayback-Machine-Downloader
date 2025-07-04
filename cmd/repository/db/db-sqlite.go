@@ -51,7 +51,7 @@ func (repo *SQLiteRepository) Migrate() (*map[string]bool, error) {
 		return nil, err
 	}
 
-	for _, value := range OptionsMap {
+	for _, value := range data.OptionsMap {
 		if _, exists := dbOptionsMap[value]; !exists {
 			err = repo.SetOptionRepo(value, false)
 			if err != nil {
