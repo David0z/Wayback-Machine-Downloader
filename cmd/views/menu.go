@@ -11,6 +11,7 @@ func MainMenuView(config *config.Config) *tview.List {
 	list := tview.NewList().
 		AddItem(data.DOWNLOAD_NEW_VIEW_TEXT, "Provide a link for a website to download its content", '1', nil).
 		AddItem(data.RESUME_DOWNLOAD_VIEW_TEXT, "Continue downloading resources from initiated process", '2', nil).
+		AddItem(data.OPTIONS, "Options", '3', nil).
 		AddItem("Quit", "Press to exit", 'q', func() {
 			config.App.Stop()
 		})
@@ -23,6 +24,8 @@ func MainMenuView(config *config.Config) *tview.List {
 			DownloadWebsiteURLs_View(config)
 		case data.RESUME_DOWNLOAD_VIEW_TEXT:
 			AnalysisList_View(config)
+		case data.OPTIONS:
+			Options_View(config)
 		}
 	})
 

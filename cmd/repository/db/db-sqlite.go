@@ -9,10 +9,19 @@ import (
 )
 
 type SelectString string
+type Option int
 
 var (
 	errorUpdate = errors.New("failed to update")
 )
+
+const (
+	OPTION_COPY_FULL_PATH Option = iota
+)
+
+var Options = map[Option]string{
+	OPTION_COPY_FULL_PATH: "COPY_FULL_PATH",
+}
 
 type SQLiteRepository struct {
 	Conn *sql.DB
@@ -37,7 +46,37 @@ func (repo *SQLiteRepository) Migrate() error {
 	`
 
 	_, err := repo.Conn.Exec(query)
+	if err != nil {
+		return err
+	}
+
+	err = repo.createOptionsTable()
+	if err != nil {
+		return err
+	}
+
+	err = repo.SetOption(Options[OPTION_COPY_FULL_PATH], false)
+
 	return err
+}
+
+func (repo *SQLiteRepository) createOptionsTable() error {
+	query := `
+		CREATE TABLE IF NOT EXISTS options(
+			key TEXT PRIMARY KEY,
+			value BOOLEAN NOT NULL DEFAULT false);
+	`
+	_, err := repo.Conn.Exec(query)
+	return err
+}
+
+func (repo *SQLiteRepository) SetOption(key string, value bool) error {
+	stmt := `INSERT INTO options (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?`
+	_, err := repo.Conn.Exec(stmt, key, value, value)
+	if err != nil {
+		return fmt.Errorf("failed to set option %s: %w", key, err)
+	}
+	return nil
 }
 
 func (repo *SQLiteRepository) InsertURLs(urls []data.Link) (*[]data.Link, error) {
