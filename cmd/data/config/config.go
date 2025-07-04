@@ -11,8 +11,9 @@ import (
 )
 
 type Config struct {
-	App *tview.Application
-	DB  *db.SQLiteRepository
+	App     *tview.Application
+	DB      *db.SQLiteRepository
+	Options *Options
 }
 
 func (c *Config) Init() {
@@ -39,8 +40,10 @@ func (c *Config) connectSQL() (*sql.DB, error) {
 func (c *Config) setupDB(sqlDB *sql.DB) {
 	c.DB = db.NewSQLiteRepository(sqlDB)
 
-	err := c.DB.Migrate()
+	optionsMap, err := c.DB.Migrate()
 	if err != nil {
 		panic(err)
 	}
+
+	c.Options = NewOptions(optionsMap)
 }
