@@ -226,10 +226,18 @@ func AnalysisList_View(config *config.Config) {
 		for index, folderName := range folderNameList {
 			list.AddItem(folderName, "", rune(index+'0'), nil)
 		}
+		// Add Back button
+		list.AddItem("Back", "Return to main menu", 'b', func() {
+			config.App.SetRoot(MainMenuView(config), true)
+		})
 
 		list.SetBorder(true).SetTitle("Select website URL").SetTitleAlign(tview.AlignLeft)
 
 		list.SetSelectedFunc(func(index int, mainText, secondaryText string, shortcut rune) {
+			if mainText == "Back" {
+				config.App.SetRoot(MainMenuView(config), true)
+				return
+			}
 			Analysis_View(config, mainText)
 		})
 

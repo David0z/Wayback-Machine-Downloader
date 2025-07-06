@@ -37,7 +37,15 @@ func DownloadWebsiteURLs_View(config *config.Config) {
 			}
 		})
 
-	config.App.SetRoot(inputField, true)
+	form := tview.NewForm().
+		AddFormItem(inputField).
+		AddButton("Back", func() {
+			config.App.SetRoot(MainMenuView(config), true)
+		})
+
+	form.SetBorder(true).SetTitle("Download new website").SetTitleAlign(tview.AlignLeft)
+
+	config.App.SetRoot(form, true)
 }
 
 func drawDownloadInfo(config *config.Config, websiteURL string) {
