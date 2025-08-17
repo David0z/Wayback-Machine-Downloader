@@ -4,7 +4,7 @@ A simple tool allowing for collective download of files from [Archive.org Waybac
 
 ## Installation
 
-Just go to latest release (on the right panel click **Releases**) and download the **wayback_downloader.exe** and run it.
+Just go to latest release (on the right panel click **Releases**) and download the **cmd.exe** and run it.
 
 ## Usage
 
