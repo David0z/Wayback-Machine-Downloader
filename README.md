@@ -6,6 +6,8 @@ A simple tool allowing for collective download of files from [Archive.org Waybac
 
 Just go to latest release (on the right panel click **Releases**) and download the **cmd.exe** and run it.
 
+**!!You might get a notification about untrusted software, but you can allow it to run, it does not contain any viruses, the codebase is freely available and public!!**
+
 ## Usage
 
 ### Step 1: Download website URLS
