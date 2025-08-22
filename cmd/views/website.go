@@ -43,6 +43,19 @@ func DownloadWebsiteURLs_View(config *config.Config) {
 			config.App.SetRoot(MainMenuView(config), true)
 		})
 
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyCtrlV {
+			config.App.Suspend(func() {
+				clipboard := util.GetClipboardContent()
+				if clipboard != "" {
+					inputField.SetText(clipboard)
+				}
+			})
+			return nil
+		}
+		return event
+	})
+
 	form.SetBorder(true).SetTitle("Download new website").SetTitleAlign(tview.AlignLeft)
 
 	config.App.SetRoot(form, true)
